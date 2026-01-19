@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodGuardML – Bangalore Street Food Safety Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: #1e3c4e;
+            --color-accent: #00bcd4;
+            --color-success: #4caf50;
+            --color-warning: #ff9800;
+            --color-error: #ff5252;
+            --color-light: #ecf0f1;
+            --color-dark: #2c3e50;
+            --color-bg: #1a1a1a;
+            --color-card: #2d2d2d;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-light);
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(90deg, var(--color-primary) 0%, #0f2837 100%);
+            padding: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .brand-text {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-link {
+            color: var(--color-light);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 0;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .view {
+            display: none;
+            min-height: 100vh;
+            padding: 40px 0;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            padding: 80px 30px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, #0f2837 100%);
+            border-radius: 15px;
+            margin-bottom: 60px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero-title {
+            font-size: 4em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: white;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3em;
+            color: var(--color-accent);
+            margin-bottom: 30px;
+        }
+
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--color-card);
+            padding: 35px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 3em;
+            font-weight: 700;
+            color: var(--color-accent);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--color-light);
+            opacity: 0.8;
+            font-size: 0.95em;
+        }
+
+        /* Info Section */
+        .info-section,
+        .chart-section {
+            background: var(--color-card);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 40px;
+            border-left: 4px solid var(--color-accent);
+        }
+
+        .info-section h2,
+        .chart-section h2 {
+            color: var(--color-accent);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .info-section p {
+            color: var(--color-light);
+            opacity: 0.9;
+            line-height: 1.8;
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 40px 0 15px;
+            color: white;
+        }
+
+        .page-subtitle {
+            font-size: 1.1em;
+            color: var(--color-accent);
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        /* Form */
+        .prediction-form {
+            background: var(--color-card);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid rgba(0, 188, 212, 0.2);
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-section h3 {
+            color: var(--color-accent);
+            margin-bottom: 25px;
+            font-size: 1.3em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            color: var(--color-light);
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        input[type="number"],
+        input[type="range"],
+        select {
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 188, 212, 0.3);
+            color: white;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        input[type="number"]:focus,
+        input[type="range"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300bcd4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            color: var(--color-light);
+        }
+
+        .checkbox-label input {
+            cursor: pointer;
+            accent-color: var(--color-accent);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn--primary {
+            background: linear-gradient(90deg, var(--color-accent), #0097a7);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+        }
+
+        .btn--primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.4);
+        }
+
+        .btn--secondary {
+            background: rgba(0, 188, 212, 0.2);
+            color: var(--color-accent);
+            border: 2px solid var(--color-accent);
+        }
+
+        .btn--secondary:hover {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        .btn--lg {
+            padding: 15px 32px;
+            font-size: 1.1em;
+        }
+
+        .btn--full-width {
+            width: 100%;
+            display: block;
+        }
+
+        .demo-buttons {
+            background: rgba(0, 188, 212, 0.1);
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+            border: 2px solid rgba(0, 188, 212, 0.3);
+        }
+
+        .demo-buttons h3 {
+            color: var(--color-accent);
+            margin-bottom: 15px;
+        }
+
+        .demo-button-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .demo-button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-actions {
+            margin-top: 30px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--color-card);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            border: 2px solid var(--color-accent);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: pointer;
+            color: var(--color-accent);
+        }
+
+        /* Results */
+        .risk-display {
+            background: rgba(0, 188, 212, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            border: 2px solid var(--color-accent);
+        }
+
+        .risk-badge {
+            font-size: 2.5em;
+            font-weight: 700;
+            padding: 15px 30px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .risk-badge.low {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .risk-badge.medium {
+            background: var(--color-warning);
+            color: white;
+        }
+
+        .risk-badge.high {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .risk-message {
+            background: rgba(0, 188, 212, 0.1);
+            border-left: 4px solid var(--color-accent);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: var(--color-light);
+            line-height: 1.8;
+        }
+
+        .recommendations {
+            background: rgba(0, 188, 212, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid rgba(0, 188, 212, 0.3);
+        }
+
+        .recommendations h3 {
+            color: var(--color-accent);
+            margin-bottom: 15px;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendations li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: var(--color-light);
+        }
+
+        .recommendations li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--color-success);
+            font-weight: bold;
+        }
+
+        /* About */
+        .about-content {
+            display: grid;
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--color-card);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border-left: 4px solid var(--color-accent);
+        }
+
+        .card__body {
+            padding: 30px;
+        }
+
+        .card__body h3 {
+            color: var(--color-accent);
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .card__body p,
+        .card__body li {
+            color: var(--color-light);
+            opacity: 0.9;
+        }
+
+        .card__body ul {
+            margin: 15px 0 15px 20px;
+        }
+
+        .card__body li {
+            margin: 8px 0;
+        }
+
+        .rubric-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr;
+            gap: 1px;
+            background: rgba(0, 188, 212, 0.3);
+            padding: 1px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .rubric-row {
+            background: var(--color-card);
+            padding: 12px;
+            display: contents;
+        }
+
+        .rubric-row strong {
+            background: var(--color-accent);
+            color: var(--color-card);
+            padding: 12px;
+            font-weight: 600;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status--success {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--color-success);
+        }
+
+        .status--warning {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--color-warning);
+        }
+
+        .status--error {
+            background: rgba(255, 82, 82, 0.2);
+            color: var(--color-error);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--color-primary);
+            color: var(--color-light);
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 60px;
+            border-top: 2px solid var(--color-accent);
+        }
+
+        /* Loading */
+        .spinner {
+            border: 4px solid rgba(0, 188, 212, 0.3);
+            border-top: 4px solid var(--color-accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand-text">FoodGuardML</div>
+            <div class="nav-links">
+                <a class="nav-link active" data-view="home" onclick="app.navigateToView('home')">Home</a>
+                <a class="nav-link" data-view="predict" onclick="app.navigateToView('predict')">Check Risk</a>
+                <a class="nav-link" data-view="about" onclick="app.navigateToView('about')">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home View -->
+        <section id="home-view" class="view active">
+            <div class="hero-section">
+                <h1 class="hero-title">FoodGuardML</h1>
+                <p class="hero-subtitle">Data-driven risk prediction for safer street food experiences</p>
+                <button class="btn btn--primary btn--lg" onclick="app.navigateToView('predict')">Check Vendor Risk →</button>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value">130</div>
+                    <div class="stat-label">Vendors Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">19</div>
+                    <div class="stat-label">Risk Parameters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Risk Levels</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">100%</div>
+                    <div class="stat-label">Coverage</div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2>🎯 Mission</h2>
+                <p>Street food is a cornerstone of Bangalore's urban identity, but rapid growth, varied hygiene levels, and informal handling expose consumers to increased risks of foodborne illness. Our project develops a data-driven, machine learning-based risk prediction model to promote safer street food experiences while supporting vendors in improving their practices.</p>
+            </div>
+
+            <div class="chart-section">
+                <h2>📊 Risk Distribution</h2>
+                <canvas id="riskChart"></canvas>
+            </div>
+
+            <div class="info-section">
+                <h2>📊 How It Works</h2>
+                <p>FoodGuardML uses 19 critical food safety parameters—temperature, humidity, hygiene practices, water quality, food handling, and environmental conditions—to predict spoilage and contamination risk. Our advanced ML model, trained on 130 vendors across Bangalore, provides instant, actionable feedback for both consumers and vendors.</p>
+            </div>
+        </section>
+
+        <!-- Predict View -->
+        <section id="predict-view" class="view">
+            <h1 class="page-title">Vendor Risk Assessment</h1>
+            <p class="page-subtitle">Fill in vendor details to predict foodborne illness risk</p>
+
+            <form id="prediction-form" class="prediction-form">
+                <div class="form-section">
+                    <h3>🍽️ Food & Operations</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Food Type</label>
+                            <select name="food_type" required>
+                                <option value="">Select food type</option>
+                                <option value="Chaat">Chaat</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Dosa/Idli">Dosa/Idli</option>
+                                <option value="Juice">Juice</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hours Per Day</label>
+                            <input type="number" name="hours_per_day" min="1" max="24" value="8" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Customers Per Day</label>
+                            <select name="customers_per_day" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Time Since Preparation (hours)</label>
+                            <input type="number" name="time_since_preparation_hours" min="0" max="12" step="0.5" value="3" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>💧 Water & Oil Quality</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Water Source</label>
+                            <select name="water_source" required>
+                                <option value="Tap">Tap (Municipal)</option>
+                                <option value="Borewell">Borewell</option>
+                                <option value="Can">Can/Container</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Oil Change Frequency</label>
+                            <select name="change_of_oil" required>
+                                <option value="Low">Low (Rarely)</option>
+                                <option value="Medium">Medium (Weekly)</option>
+                                <option value="High">High (Daily)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>🧼 Hygiene Practices</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Hand Hygiene</label>
+                            <select name="hand_hygiene" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Utensil Hygiene</label>
+                            <select name="utensil_hygiene" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cleaning Frequency (per day)</label>
+                        <input type="number" name="cleaning_frequency_per_day" min="0" max="12" value="3" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>📦 Food Handling & Storage</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Covered Food</label>
+                            <select name="covered_food" required>
+                                <option value="Low">Low (Exposed)</option>
+                                <option value="Medium">Medium (Partial)</option>
+                                <option value="High">High (Well Covered)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Storage Type</label>
+                            <select name="storage_type" required>
+                                <option value="Open">Open</option>
+                                <option value="Insulated_box">Insulated Box</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>🌡️ Environmental Conditions</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Ambient Temperature (°C): <strong style="color: var(--color-accent);" id="temp-value">32</strong></label>
+                            <input type="range" name="ambient_temperature_c" min="15" max="50" value="32" step="0.5" oninput="document.getElementById('temp-value').textContent = this.value">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Relative Humidity (%): <strong style="color: var(--color-accent);" id="humidity-value">65</strong></label>
+                            <input type="range" name="relative_humidity_pct" min="30" max="95" value="65" step="1" oninput="document.getElementById('humidity-value').textContent = this.value">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Surface Moisture Level</label>
+                            <select name="surface_moisture_level" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Proximity to Waste</label>
+                            <select name="proximity_to_waste" required>
+                                <option value="Low">Low (Far)</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High (Very Close)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Distance to Drain (m)</label>
+                            <input type="number" name="distance_to_drain_m" min="0" max="20" step="0.5" value="3" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Flies Present</label>
+                            <select name="flies_present" required>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>🔬 Advanced Parameters</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Stall Temperature (°C)</label>
+                            <input type="number" name="stall_temperature_c" min="0" max="50" step="0.1" value="33" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Food Core Temp (°C)</label>
+                            <input type="number" name="food_core_temp_c" min="0" max="100" step="0.1" value="60" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Surface Aw Index</label>
+                        <input type="number" name="surface_aw_index" min="0.7" max="1.0" step="0.01" value="0.95" required>
+                    </div>
+                </div>
+
+                <div class="demo-buttons">
+                    <h3>⚡ Quick Demo</h3>
+                    <div class="demo-button-group">
+                        <button type="button" class="btn btn--secondary" onclick="app.fillDemoForm('high')">🚨 High Risk</button>
+                        <button type="button" class="btn btn--secondary" onclick="app.fillDemoForm('medium')">⚠️ Medium Risk</button>
+                        <button type="button" class="btn btn--secondary" onclick="app.fillDemoForm('low')">✅ Low Risk</button>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn--primary btn--lg btn--full-width">🚀 Predict Risk</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- About View -->
+        <section id="about-view" class="view">
+            <h1 class="page-title">About FoodGuardML</h1>
+
+            <div class="about-content">
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Project Overview</h3>
+                        <p>Street food is central to Bangalore's culture and lifestyle, yet repeated surveys show high rates of microbiological contamination. FoodGuardML is an AI-powered risk prediction system designed to protect consumers and empower vendors.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Methodology</h3>
+                        <p>Our approach integrates:</p>
+                        <ul>
+                            <li><strong>Field Data:</strong> 130 vendors surveyed across VV Puram, Jayanagar, JP Nagar</li>
+                            <li><strong>19 Risk Parameters:</strong> Temperature, humidity, hygiene, water quality, storage, time, environment</li>
+                            <li><strong>Advanced Scoring:</strong> Weighted scoring combined with Random Forest ML</li>
+                            <li><strong>Real-time Prediction:</strong> Instant risk assessment with recommendations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Risk Scoring Rubric</h3>
+                        <div class="rubric-table">
+                            <div class="rubric-row">
+                                <strong>Risk Level</strong>
+                                <strong>Score Range</strong>
+                                <strong>Interpretation</strong>
+                            </div>
+                            <div class="rubric-row">
+                                <span class="status status--success">Low Risk</span>
+                                <span>0–15</span>
+                                <span>Safe for consumption</span>
+                            </div>
+                            <div class="rubric-row">
+                                <span class="status status--warning">Medium Risk</span>
+                                <span>16–32</span>
+                                <span>Caution advised</span>
+                            </div>
+                            <div class="rubric-row">
+                                <span class="status status--error">High Risk</span>
+                                <span>33+</span>
+                                <span>Avoid or request improvements</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Impact & Vision</h3>
+                        <p>FoodGuardML bridges public health, predictive analytics, and local food culture. It supports both consumer well-being and the street food community, promoting healthier practices and sustainable culinary traditions in Indian urban settings.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Results Modal -->
+    <div id="results-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="app.closeModal()">&times;</button>
+            <div id="results-content"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 FoodGuardML | Bangalore Street Food Safety Monitor | Protecting Bangalore's Food Culture Through AI</p>
+    </footer>
+
+    <script>
+        const app = {
+            navigateToView(viewName) {
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById(`${viewName}-view`).classList.add('active');
+                document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+                window.scrollTo(0, 0);
+            },
+
+            fillDemoForm(riskLevel) {
+                const form = document.getElementById('prediction-form');
+                if (riskLevel === 'high') {
+                    form['ambient_temperature_c'].value = 42;
+                    form['relative_humidity_pct'].value = 85;
+                    form['time_since_preparation_hours'].value = 6;
+                    form['covered_food'].value = 'Low';
+                    form['proximity_to_waste'].value = 'High';
+                    form['hand_hygiene'].value = 'Low';
+                    form['utensil_hygiene'].value = 'Low';
+                    form['change_of_oil'].value = 'Low';
+                    form['distance_to_drain_m'].value = 1;
+                    form['flies_present'].value = 'Yes';
+                    form['cleaning_frequency_per_day'].value = 1;
+                } else if (riskLevel === 'medium') {
+                    form['ambient_temperature_c'].value = 33;
+                    form['relative_humidity_pct'].value = 70;
+                    form['time_since_preparation_hours'].value = 3;
+                    form['covered_food'].value = 'Medium';
+                    form['proximity_to_waste'].value = 'Medium';
+                    form['hand_hygiene'].value = 'Medium';
+                    form['utensil_hygiene'].value = 'Medium';
+                    form['change_of_oil'].value = 'Medium';
+                    form['distance_to_drain_m'].value = 3;
+                    form['flies_present'].value = 'No';
+                    form['cleaning_frequency_per_day'].value = 3;
+                } else {
+                    form['ambient_temperature_c'].value = 25;
+                    form['relative_humidity_pct'].value = 55;
+                    form['time_since_preparation_hours'].value = 1;
+                    form['covered_food'].value = 'High';
+                    form['proximity_to_waste'].value = 'Low';
+                    form['hand_hygiene'].value = 'High';
+                    form['utensil_hygiene'].value = 'High';
+                    form['change_of_oil'].value = 'High';
+                    form['distance_to_drain_m'].value = 15;
+                    form['flies_present'].value = 'No';
+                    form['cleaning_frequency_per_day'].value = 6;
+                }
+                document.getElementById('temp-value').textContent = form['ambient_temperature_c'].value;
+                document.getElementById('humidity-value').textContent = form['relative_humidity_pct'].value;
+            },
+
+            closeModal() {
+                document.getElementById('results-modal').classList.remove('active');
+            }
+        };
+
+        // Form submission
+        document.getElementById('prediction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const modal = document.getElementById('results-modal');
+            const content = document.getElementById('results-content');
+            content.innerHTML = '<div class="spinner"></div><p>Analyzing vendor conditions...</p>';
+            modal.classList.add('active');
+
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                const riskClass = data.risk_label.toLowerCase();
+
+                content.innerHTML = `
+                    <div class="risk-display">
+                        <div class="risk-badge ${riskClass}">${data.risk_label}</div>
+                        <div style="font-size: 1.1em; color: var(--color-light); margin-top: 10px;">Risk Score: <strong style="color: var(--color-accent);">${data.rule_score}</strong> / 50</div>
+                    </div>
+                    <div class="risk-message">
+                        <strong>Assessment:</strong> ${data.message}
+                    </div>
+                    <div class="recommendations">
+                        <h3>💡 Key Recommendations</h3>
+                        <ul>
+                            ${data.risk_label === 'High' ? `
+                                <li>Reduce ambient temperature exposure</li>
+                                <li>Minimize food holding time immediately</li>
+                                <li>Relocate stall away from waste and drains</li>
+                                <li>Improve food covering and containment</li>
+                                <li>Enhance hand and utensil hygiene urgently</li>
+                            ` : data.risk_label === 'Medium' ? `
+                                <li>Monitor temperature and humidity closely</li>
+                                <li>Increase cleaning frequency</li>
+                                <li>Improve water source quality</li>
+                                <li>Reduce oil reuse frequency</li>
+                                <li>Maintain better food coverage</li>
+                            ` : `
+                                <li>Maintain current hygiene standards</li>
+                                <li>Continue regular equipment cleaning</li>
+                                <li>Monitor temperature consistently</li>
+                                <li>Keep stall distance from waste</li>
+                                <li>Conduct periodic safety audits</li>
+                            `}
+                        </ul>
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = `<p style="color: var(--color-error);"><strong>Error:</strong> ${error.message}</p>`;
+            }
+        });
+
+        // Initialize chart on home view
+        window.addEventListener('load', () => {
+            const ctx = document.getElementById('riskChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+                        datasets: [{
+                            label: 'Vendors',
+                            data: [78, 35, 17],
+                            backgroundColor: ['#ff5252', '#ff9800', '#4caf50'],
+                            borderColor: ['#00bcd4', '#00bcd4', '#00bcd4'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: '#ecf0f1' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: { color: '#ecf0f1' },
+                                grid: { color: 'rgba(0, 188, 212, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: '#ecf0f1' },
+                                grid: { color: 'rgba(0, 188, 212, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
